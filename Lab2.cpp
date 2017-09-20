@@ -1,10 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-
-#include <string>
-#include <chrono>
-#include <cmath>
+#include "imports.h"
 
 void insertionSort(std::vector<double>& data);
 
