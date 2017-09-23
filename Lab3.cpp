@@ -1,12 +1,10 @@
-#include "Lab2.h"
-
-#include <random>
+#include "Lab3.h"
 
 void mergeSort(std::vector<double>& data, std::vector<double>& temp, int start, int end);
 void merge(std::vector<double>& data, std::vector<double>& temp, int start, int mid, int end);
 void sort(std::vector<double> & data);
 
-void main()
+void lab3_main()
 {
 
 #if 0
