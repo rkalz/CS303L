@@ -1,11 +1,6 @@
-#include "Lab3.h"
+#include "Lab4.h"
 
-void heapSort(std::vector<double>& data);
-void buildMaxHeap(std::vector<double>& data);
-void maxHeapify(std::vector<double>& data, int i, int heapSize);
-
-
-void main()
+void main_4()
 {
 	std::vector<std::string> files;
 	files.push_back("input_100.txt");
