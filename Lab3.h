@@ -1,6 +1,5 @@
 #pragma once
 
-#include "imports.h"
 #include "Lab2.h"
 
 void mergeSort(std::vector<double>& data, std::vector<double>& temp, int start, int end);
