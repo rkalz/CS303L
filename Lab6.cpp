@@ -35,7 +35,7 @@ void main()
 	}
 
 	std::ofstream out;
-	out.open("results.txt");
+	out.open("results_lab6.txt");
 
 	for (std::string city : cities)
 	{
@@ -45,6 +45,7 @@ void main()
 		map.erase(city);
 	}
 	
+	out.close();
 	system("pause");
 }
 
