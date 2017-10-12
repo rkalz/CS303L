@@ -1,6 +1,6 @@
 #include "Lab6.h"
 
-void main()
+void lab6_main()
 {
 	std::vector<std::string> input;
 	std::ifstream file("NovelSortInput.txt");
