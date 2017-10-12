@@ -2,99 +2,28 @@
 
 void main()
 {
-	// Read from UPC.csv, group into Item structs, add to vector, and randomize order
-	std::ifstream upc("UPC.csv");
-	std::vector<Item>* items  = new std::vector<Item>();
-	std::string s;
-	std::cout << "Reading data from file... ";
 	auto start = std::chrono::high_resolution_clock::now();
-	while (std::getline(upc, s,'\r')) // get items from csv file and put them in Item vector
-	{
-		std::istringstream stream(s);
-		std::string id;
-		std::getline(stream, id, ',');
-		std::string unit; 
-		std::getline(stream, unit, ',');
-		std::string desc;
-		std::getline(stream, desc, ',');
-
-		items->emplace_back(Item(id, unit, desc));
-	}
-	//std::random_shuffle(items->begin(), items->end()); // since file ids ordered, shuffle to prevent linked list behavior
-	upc.close();
-	auto end = std::chrono::high_resolution_clock::now();
-	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	std::cout << "Read " << items->size() << " objects in " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
+	// Read from UPC.csv, group into Item structs, add to vector, and randomize order
+	std::vector<Item>* items = loadFile("UPC.csv");
 	
 	// Build BST from contents of item array
 	TreeNode* root = nullptr;
-	std::vector<TreeNode*> ptrs; // = new std::vector<TreeNode*>();  // store the pointers here for quick deletion at the end
-	std::cout << "Generating Binary Search Tree... ";
-	start = std::chrono::high_resolution_clock::now();
-	while (!items->empty()) // place array items into binary search tree
-	{
-		Item i = items->back();
-		if (root == nullptr)
-		{
-			root = new TreeNode(std::stoull(i.key), i.unit + "," + i.desc);
-			ptrs.emplace_back(root);
-		}
-		else treeInsert(root, std::stoull(i.key), i.unit + "," + i.desc, ptrs);
-		items->pop_back();
-	}
-	delete items;
-	end = std::chrono::high_resolution_clock::now();
-	diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	std::cout << "Added " << ptrs.size() << " objects in " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
+	std::vector<TreeNode*> ptrs = generateBST(root, items);
 	
 	// Search for queries read in from input.dat using both search methods
-	std::cout << std::endl;
-	std::ifstream input("input.dat");
-	while (std::getline(input, s, '\n')) // search for each item in .dat file
-	{
-		std::stringstream stream(s);
-		std::string id;
-		std::getline(stream, id, ',');
-		std::string unit;
-		std::getline(stream, unit, ',');
-		std::string desc;
-		std::getline(stream, desc, ',');
-
-		std::cout << "Searching for " << id << ": " << unit << "," << desc << std::endl;
-		std::cout << "Recursive Search:" << std::endl; // Recursive search
-		start = std::chrono::high_resolution_clock::now();
-		TreeNode* res = treeSearch(root, std::stoull(id));
-		if (res == nullptr) std::cout << "Not found" << std::endl;
-		else std::cout << "Found         " << res->key << ": " << res->desc << std::endl;
-		end = std::chrono::high_resolution_clock::now();
-		diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		std::cout << "Took " << diff << " microseconds (" << log10(diff) << ")" << std::endl;
-
-		std::cout << "Iterative Search:" << std::endl; // Iterative search
-		start = std::chrono::high_resolution_clock::now(); 
-		res = iterativeTreeSearch(root, std::stoull(id));
-		if (res == nullptr) std::cout << "Not found" << std::endl;
-		else std::cout << "Found         " << res->key << ": " << res->desc << std::endl;
-		end = std::chrono::high_resolution_clock::now();
-		diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		std::cout << "Took " << diff << " microseconds (" << log10(diff) << ")" << std::endl;
-
-		std::cout << std::endl;
-	}
-	input.close();
+	searchQueries(root, "input.dat");
 
 	// Delete each node because they were dynamically allocated
-	std::cout << "Deleting Binary Search Tree... ";
-	start = std::chrono::high_resolution_clock::now();
 	deleteTree(ptrs);
-	end = std::chrono::high_resolution_clock::now();
-	diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	std::cout << "Took " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Program ran in " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
 	system("pause");
 }
 
 // Inserts new node into the tree with root x
-void treeInsert(TreeNode* x, unsigned long long k, std::string d, std::vector<TreeNode*>& ptrs)
+void treeInsert(TreeNode* x, unsigned long long k, std::string d, std::vector<TreeNode*> &ptrs)
 {
 	TreeNode* z = new TreeNode(k,d);
 	TreeNode* y = nullptr;
@@ -143,14 +72,113 @@ TreeNode* iterativeTreeSearch(TreeNode* x, unsigned long long k)
 	return x;
 }
 
-// deletes all nodes stored in the passed vector (post traversal deletion causes stack overflow)
-void deleteTree(std::vector<TreeNode*>& ptrs)
+// Loads file in specified format into dynamic Item array
+std::vector<Item>* loadFile(std::string f)
 {
+	std::ifstream upc(f);
+	std::vector<Item>* items = new std::vector<Item>();
+	std::string s;
+	std::cout << "Reading data from file... ";
+	auto start = std::chrono::high_resolution_clock::now();
+	while (std::getline(upc, s, '\r')) // get items from csv file and put them in Item vector
+	{
+		std::istringstream stream(s);
+		std::string id;
+		std::getline(stream, id, ',');
+		std::string unit;
+		std::getline(stream, unit, ',');
+		std::string desc;
+		std::getline(stream, desc, ',');
+
+		items->emplace_back(Item(id, unit, desc));
+	}
+	//std::random_shuffle(items->begin(), items->end()); // since file ids ordered, shuffle to prevent linked list behavior
+	upc.close();
+	auto end = std::chrono::high_resolution_clock::now();
+	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Read " << items->size() << " objects in " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
+
+	return items;
+}
+
+// Generates binary search tree starting at root from item vector
+std::vector<TreeNode*> generateBST(TreeNode* &root, std::vector<Item>* &items)
+{
+	std::vector<TreeNode*> ptrs; // store the pointers here for quick deletion at the end
+	std::cout << "Generating Binary Search Tree... ";
+	auto start = std::chrono::high_resolution_clock::now();
+	while (!items->empty()) // place array items into binary search tree
+	{
+		Item i = items->back();
+		if (root == nullptr)
+		{
+			root = new TreeNode(std::stoull(i.key), i.unit + "," + i.desc);
+			ptrs.emplace_back(root);
+		}
+		else treeInsert(root, std::stoull(i.key), i.unit + "," + i.desc, ptrs);
+		items->pop_back();
+	}
+	delete items;
+	auto end = std::chrono::high_resolution_clock::now();
+	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Added " << ptrs.size() << " objects in " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
+
+	return ptrs;
+}
+
+// Loads a file of search queries and looks for them in the BST with root
+void searchQueries(TreeNode* root, std::string f)
+{
+	std::cout << std::endl;
+	std::ifstream input(f);
+	std::string s;
+	while (std::getline(input, s, '\n')) // search for each item in .dat file
+	{
+		std::stringstream stream(s);
+		std::string id;
+		std::getline(stream, id, ',');
+		std::string unit;
+		std::getline(stream, unit, ',');
+		std::string desc;
+		std::getline(stream, desc, ',');
+
+		std::cout << "Searching for " << id << ": " << unit << "," << desc << std::endl;
+		std::cout << "Recursive Search:" << std::endl; 
+		auto start = std::chrono::high_resolution_clock::now();
+		TreeNode* res = treeSearch(root, std::stoull(id)); // Recursive search
+		if (res == nullptr) std::cout << "Not found" << std::endl;
+		else std::cout << "Found         " << res->key << ": " << res->desc << std::endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		std::cout << "Took " << diff << " microseconds (" << log10(diff) << ")" << std::endl;
+
+		std::cout << "Iterative Search:" << std::endl; 
+		start = std::chrono::high_resolution_clock::now();
+		res = iterativeTreeSearch(root, std::stoull(id)); // Iterative search
+		if (res == nullptr) std::cout << "Not found" << std::endl;
+		else std::cout << "Found         " << res->key << ": " << res->desc << std::endl;
+		end = std::chrono::high_resolution_clock::now();
+		diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		std::cout << "Took " << diff << " microseconds (" << log10(diff) << ")" << std::endl;
+
+		std::cout << std::endl;
+	}
+	input.close();
+}
+
+// deletes all nodes stored in the passed vector (post traversal deletion causes stack overflow)
+void deleteTree(std::vector<TreeNode*> &ptrs)
+{
+	std::cout << "Deleting Binary Search Tree... ";
+	auto start = std::chrono::high_resolution_clock::now();
 	while (!ptrs.empty())
 	{
 		delete ptrs.back();
 		ptrs.pop_back();
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Took " << diff << " milliseconds (" << log10(diff) << ")" << std::endl;
 }
 
 
