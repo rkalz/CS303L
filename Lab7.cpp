@@ -1,10 +1,10 @@
 #include "Lab7.h"
 
-void main()
+void lab7_main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 	// Read from UPC.csv, group into Item structs, add to vector, and randomize order
-	std::vector<Item>* items = loadFile("UPC.csv");
+	std::vector<Item>* items = loadFile("UPC.csv", false);
 	
 	// Build BST from contents of item array
 	TreeNode* root = nullptr;
@@ -73,14 +73,14 @@ TreeNode* iterativeTreeSearch(TreeNode* x, unsigned long long k)
 }
 
 // Loads file in specified format into dynamic Item array
-std::vector<Item>* loadFile(std::string f)
+std::vector<Item>* loadFile(std::string f, bool randomOrder)
 {
 	std::ifstream upc(f);
 	std::vector<Item>* items = new std::vector<Item>();
 	std::string s;
 	std::cout << "Reading data from file... ";
 	auto start = std::chrono::high_resolution_clock::now();
-	while (std::getline(upc, s, '\r')) // get items from csv file and put them in Item vector
+	while (std::getline(upc, s, '\n')) // get items from csv file and put them in Item vector
 	{
 		std::istringstream stream(s);
 		std::string id;
@@ -92,7 +92,7 @@ std::vector<Item>* loadFile(std::string f)
 
 		items->emplace_back(Item(id, unit, desc));
 	}
-	//std::random_shuffle(items->begin(), items->end()); // since file ids ordered, shuffle to prevent linked list behavior
+	if (randomOrder) std::random_shuffle(items->begin(), items->end()); // since file ids ordered, shuffle to prevent linked list behavior
 	upc.close();
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -127,7 +127,7 @@ std::vector<TreeNode*> generateBST(TreeNode* &root, std::vector<Item>* &items)
 }
 
 // Loads a file of search queries and looks for them in the BST with root
-void searchQueries(TreeNode* root, std::string f)
+void searchQueries(TreeNode* &root, std::string f)
 {
 	std::cout << std::endl;
 	std::ifstream input(f);

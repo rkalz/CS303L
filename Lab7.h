@@ -10,13 +10,14 @@ struct Item {
 	Item(std::string k, std::string u, std::string d) : key(k), unit(u), desc(d) {}
 };
 
-// Node in a binary tree
+// Node in a binary tree.
 struct TreeNode {
 	unsigned long long key; // used due to size of UPC in file (maxed at 10^10, unsigned long maxed at 10^9, rest are smaller)
 	std::string desc;
 	TreeNode* left;
 	TreeNode* right;
 
+	TreeNode() {}
 	TreeNode(unsigned long long k, std::string d) : key(k), desc(d), left(nullptr), right(nullptr) {}
 };
 
@@ -27,7 +28,7 @@ TreeNode* treeSearch(TreeNode* x, unsigned long long k);
 TreeNode* iterativeTreeSearch(TreeNode* x, unsigned long long k);
 
 // Used for the specific problem
-std::vector<Item>* loadFile(std::string f);
+std::vector<Item>* loadFile(std::string f, bool randomOrder);
 std::vector<TreeNode*> generateBST(TreeNode* &root, std::vector<Item>* &items);
-void searchQueries(TreeNode* root, std::string f);
+void searchQueries(TreeNode* &root, std::string f);
 void deleteTree(std::vector<TreeNode*> &ptrs);
