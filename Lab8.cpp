@@ -1,6 +1,6 @@
 #include "Lab8.h"
 
-void lab8_main()
+void main()
 {
 	Tree<std::string*> t;
 	std::vector<Item>* items = loadFile("UPC-random.csv", false);

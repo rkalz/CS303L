@@ -9,3 +9,4 @@
 #include <random>
 #include <unordered_map>
 #include <sstream>
+#include <cassert>
