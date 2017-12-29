@@ -11,6 +11,7 @@ public class Lab14 {
 		WeightedGraph graph = new WeightedGraph(new BufferedReader(new FileReader("tinyDG.txt")));
 		long start = System.nanoTime();
 		graph.Djikstra(0);
+		System.out.println(graph.printPath(0, 5));
 		long end = System.nanoTime();
 		long diff = (end - start) / 1000;
 		System.out.println("Tiny: " + diff + " mus");
